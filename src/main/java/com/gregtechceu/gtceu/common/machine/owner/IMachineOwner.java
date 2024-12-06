@@ -9,6 +9,7 @@ import net.minecraft.world.entity.player.Player;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BooleanSupplier;
 
 public sealed interface IMachineOwner permits PlayerOwner, ArgonautsOwner, FTBOwner {
@@ -20,6 +21,8 @@ public sealed interface IMachineOwner permits PlayerOwner, ArgonautsOwner, FTBOw
     MachineOwnerType type();
 
     void displayInfo(List<Component> compList);
+
+    UUID getPlayerUUID();
 
     static IMachineOwner create(CompoundTag tag) {
         MachineOwnerType type = MachineOwnerType.VALUES[tag.getInt("type")];
