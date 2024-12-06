@@ -1,5 +1,8 @@
 package com.gregtechceu.gtceu.common.data;
 
+import com.google.common.collect.ArrayTable;
+import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.Table;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.GTValues;
@@ -39,10 +42,17 @@ import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
 import com.gregtechceu.gtceu.utils.SupplierMemoizer;
-
 import com.lowdragmc.lowdraglib.LDLib;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
-
+import com.tterrag.registrate.builders.ItemBuilder;
+import com.tterrag.registrate.providers.DataGenContext;
+import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.providers.RegistrateLangProvider;
+import com.tterrag.registrate.util.entry.ItemEntry;
+import com.tterrag.registrate.util.entry.ItemProviderEntry;
+import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
+import com.tterrag.registrate.util.nullness.NonNullConsumer;
+import com.tterrag.registrate.util.nullness.NonNullFunction;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.renderer.item.ItemPropertyFunction;
@@ -66,19 +76,6 @@ import net.minecraftforge.common.TierSortingRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.FluidUtil;
-
-import com.google.common.collect.ArrayTable;
-import com.google.common.collect.ImmutableTable;
-import com.google.common.collect.Table;
-import com.tterrag.registrate.builders.ItemBuilder;
-import com.tterrag.registrate.providers.DataGenContext;
-import com.tterrag.registrate.providers.ProviderType;
-import com.tterrag.registrate.providers.RegistrateLangProvider;
-import com.tterrag.registrate.util.entry.ItemEntry;
-import com.tterrag.registrate.util.entry.ItemProviderEntry;
-import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
-import com.tterrag.registrate.util.nullness.NonNullConsumer;
-import com.tterrag.registrate.util.nullness.NonNullFunction;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -649,7 +646,7 @@ public class GTItems {
                     new ItemFluidContainer()))
             .onRegister(modelPredicate(GTCEu.id("lighter_open"),
                     (itemStack) -> itemStack.getOrCreateTag().getBoolean(LighterBehavior.LIGHTER_OPEN) ? 1.0f : 0.0f))
-            .register();;
+            .register();
 
     public static ItemEntry<Item> CARBON_FIBERS = REGISTRATE.item("carbon_fibers", Item::new)
             .onRegister(compassNodeExist(GTCompassSections.MISC, "raw_carbon_fibers")).lang("Raw Carbon Fibers")
@@ -975,7 +972,7 @@ public class GTItems {
             })))
             .onRegister(compassNodeExist(GTCompassSections.COVERS, "pump", GTCompassNodes.COVER))
             .tag(CustomTags.ELECTRIC_PUMPS)
-            .register();;
+            .register();
     public static ItemEntry<ComponentItem> ELECTRIC_PUMP_HV = REGISTRATE.item("hv_electric_pump", ComponentItem::create)
             .lang("HV Electric Pump")
             .onRegister(attach(new CoverPlaceBehavior(GTCovers.PUMPS[2])))
@@ -986,7 +983,7 @@ public class GTItems {
             })))
             .onRegister(compassNodeExist(GTCompassSections.COVERS, "pump", GTCompassNodes.COVER))
             .tag(CustomTags.ELECTRIC_PUMPS)
-            .register();;
+            .register();
     public static ItemEntry<ComponentItem> ELECTRIC_PUMP_EV = REGISTRATE.item("ev_electric_pump", ComponentItem::create)
             .lang("EV Electric Pump")
             .onRegister(attach(new CoverPlaceBehavior(GTCovers.PUMPS[3])))
@@ -997,7 +994,7 @@ public class GTItems {
             })))
             .onRegister(compassNodeExist(GTCompassSections.COVERS, "pump", GTCompassNodes.COVER))
             .tag(CustomTags.ELECTRIC_PUMPS)
-            .register();;
+            .register();
     public static ItemEntry<ComponentItem> ELECTRIC_PUMP_IV = REGISTRATE.item("iv_electric_pump", ComponentItem::create)
             .lang("IV Electric Pump")
             .onRegister(attach(new CoverPlaceBehavior(GTCovers.PUMPS[4])))
@@ -1008,7 +1005,7 @@ public class GTItems {
             })))
             .onRegister(compassNodeExist(GTCompassSections.COVERS, "pump", GTCompassNodes.COVER))
             .tag(CustomTags.ELECTRIC_PUMPS)
-            .register();;
+            .register();
     public static ItemEntry<ComponentItem> ELECTRIC_PUMP_LuV = REGISTRATE
             .item("luv_electric_pump", ComponentItem::create)
             .lang("LuV Electric Pump")
@@ -1020,7 +1017,7 @@ public class GTItems {
             })))
             .onRegister(compassNodeExist(GTCompassSections.COVERS, "pump", GTCompassNodes.COVER))
             .tag(CustomTags.ELECTRIC_PUMPS)
-            .register();;
+            .register();
     public static ItemEntry<ComponentItem> ELECTRIC_PUMP_ZPM = REGISTRATE
             .item("zpm_electric_pump", ComponentItem::create)
             .lang("ZPM Electric Pump")
@@ -1032,7 +1029,7 @@ public class GTItems {
             })))
             .onRegister(compassNodeExist(GTCompassSections.COVERS, "pump", GTCompassNodes.COVER))
             .tag(CustomTags.ELECTRIC_PUMPS)
-            .register();;
+            .register();
     public static ItemEntry<ComponentItem> ELECTRIC_PUMP_UV = REGISTRATE.item("uv_electric_pump", ComponentItem::create)
             .lang("UV Electric Pump")
             .onRegister(attach(new CoverPlaceBehavior(GTCovers.PUMPS[7])))
@@ -1044,7 +1041,7 @@ public class GTItems {
             })))
             .onRegister(compassNodeExist(GTCompassSections.COVERS, "pump", GTCompassNodes.COVER))
             .tag(CustomTags.ELECTRIC_PUMPS)
-            .register();;
+            .register();
 
     public static ItemEntry<ComponentItem> ELECTRIC_PUMP_UHV = GTCEuAPI.isHighTier() ?
             REGISTRATE.item("uhv_electric_pump", ComponentItem::create)
@@ -2232,7 +2229,8 @@ public class GTItems {
             .item("ender_fluid_link_cover", ComponentItem::create)
             .lang("Ender Fluid Link")
             .onRegister(compassNode(GTCompassSections.COVERS, GTCompassNodes.COVER))
-            .register();
+            .onRegister(attach(new CoverPlaceBehavior(GTCovers.ENDER_FLUID_LINK))).register();
+
     public static ItemEntry<ComponentItem> COVER_FLUID_VOIDING = REGISTRATE
             .item("fluid_voiding_cover", ComponentItem::create)
             .lang("Fluid Voiding Cover")
@@ -2969,8 +2967,8 @@ public class GTItems {
 
     public static void registerToolTier(MaterialToolTier tier, ResourceLocation id, Collection<ResourceLocation> before,
                                         Collection<ResourceLocation> after) {
-        TierSortingRegistry.registerTier(tier, id, Arrays.asList((Object[]) before.toArray(ResourceLocation[]::new)),
-                Arrays.asList((Object[]) after.toArray(ResourceLocation[]::new)));
+        TierSortingRegistry.registerTier(tier, id, Arrays.asList(before.toArray(ResourceLocation[]::new)),
+                Arrays.asList(after.toArray(ResourceLocation[]::new)));
     }
 
     public static ResourceLocation getTierName(Tier tier) {
