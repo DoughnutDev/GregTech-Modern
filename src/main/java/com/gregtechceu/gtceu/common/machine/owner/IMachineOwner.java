@@ -64,12 +64,12 @@ public sealed interface IMachineOwner permits PlayerOwner, ArgonautsOwner, FTBOw
         @Getter
         private final String name;
 
-        private MachineOwnerType(BooleanSupplier availabilitySupplier, String name) {
+        MachineOwnerType(BooleanSupplier availabilitySupplier, String name) {
             this.availabilitySupplier = availabilitySupplier;
             this.name = name;
         }
 
-        private MachineOwnerType() {
+        MachineOwnerType() {
             this.available = true;
             this.name = "Player";
         }
