@@ -32,6 +32,8 @@ import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.item.tool.GTToolType;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
+import com.gregtechceu.gtceu.api.machine.SimpleGeneratorMachine;
+import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.pattern.FactoryBlockPattern;
@@ -43,10 +45,13 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.OverclockingLogic;
 import com.gregtechceu.gtceu.api.recipe.category.GTRecipeCategory;
 import com.gregtechceu.gtceu.api.recipe.chance.logic.ChanceLogic;
+import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
+import com.gregtechceu.gtceu.api.registry.registrate.MultiblockMachineBuilder;
 import com.gregtechceu.gtceu.common.data.*;
 import com.gregtechceu.gtceu.common.data.machines.GCYMMachines;
 import com.gregtechceu.gtceu.common.item.armor.PowerlessJetpack;
+import com.gregtechceu.gtceu.common.machine.multiblock.primitive.PrimitiveFancyUIWorkableMachine;
 import com.gregtechceu.gtceu.common.unification.material.MaterialRegistryManager;
 import com.gregtechceu.gtceu.data.recipe.CraftingComponent;
 import com.gregtechceu.gtceu.data.recipe.builder.GTRecipeBuilder;
@@ -55,6 +60,7 @@ import com.gregtechceu.gtceu.integration.kjs.builders.block.CoilBlockBuilder;
 import com.gregtechceu.gtceu.integration.kjs.builders.machine.*;
 import com.gregtechceu.gtceu.integration.kjs.builders.prefix.BasicTagPrefixBuilder;
 import com.gregtechceu.gtceu.integration.kjs.builders.prefix.OreTagPrefixBuilder;
+import com.gregtechceu.gtceu.integration.kjs.helpers.MachineModifiers;
 import com.gregtechceu.gtceu.integration.kjs.helpers.MaterialStackWrapper;
 import com.gregtechceu.gtceu.integration.kjs.recipe.GTRecipeSchema;
 import com.gregtechceu.gtceu.integration.kjs.recipe.components.ExtendedOutputItem;
@@ -72,6 +78,9 @@ import net.minecraft.world.level.levelgen.placement.HeightRangePlacement;
 import com.mojang.serialization.DataResult;
 import dev.latvian.mods.kubejs.KubeJSPlugin;
 import dev.latvian.mods.kubejs.block.state.BlockStatePredicate;
+import dev.latvian.mods.kubejs.client.LangEventJS;
+import dev.latvian.mods.kubejs.generator.AssetJsonGenerator;
+import dev.latvian.mods.kubejs.generator.DataJsonGenerator;
 import dev.latvian.mods.kubejs.recipe.RecipesEventJS;
 import dev.latvian.mods.kubejs.recipe.schema.RecipeComponentFactoryRegistryEvent;
 import dev.latvian.mods.kubejs.recipe.schema.RegisterRecipeSchemasEvent;
@@ -116,20 +125,28 @@ public class GregTechKubeJSPlugin extends KubeJSPlugin {
         GTRegistryInfo.RECIPE_CATEGORY.addType("basic", GTRecipeCategoryBuilder.class, GTRecipeCategoryBuilder::new,
                 true);
 
-        GTRegistryInfo.MACHINE.addType("simple", SimpleMachineBuilder.class,
-                (id, args) -> SimpleMachineBuilder.create(id.getPath(), args), true);
-        GTRegistryInfo.MACHINE.addType("custom", CustomTieredMachineBuilder.class,
-                (id, args) -> CustomTieredMachineBuilder.createAll(id.getPath(), args), false);
-        GTRegistryInfo.MACHINE.addType("steam", SteamMachineBuilder.class,
-                (id, args) -> SteamMachineBuilder.createBoth(id.getPath(), args), false);
-        GTRegistryInfo.MACHINE.addType("generator", GeneratorBuilder.class,
-                (id, args) -> GeneratorBuilder.createAll(id.getPath(), args), false);
-        GTRegistryInfo.MACHINE.addType("multiblock", CustomMultiblockBuilder.class,
-                (id, args) -> CustomMultiblockBuilder.createMultiblock(id.getPath(), args), false);
-        GTRegistryInfo.MACHINE.addType("primitive", CustomMultiblockBuilder.class,
-                (id, args) -> CustomMultiblockBuilder.createPrimitiveMultiblock(id.getPath(), args), false);
-        GTRegistryInfo.MACHINE.addType("kinetic", KineticMachineBuilder.class,
-                (id, args) -> KineticMachineBuilder.createAll(id.getPath(), args), false);
+        GTRegistryInfo.MACHINE.addType("simple", KJSWrappingMachineBuilder.class,
+                (id) -> new KJSWrappingMachineBuilder(id,
+                        new KJSTieredMachineBuilder(id, SimpleTieredMachine::new,
+                                SimpleTieredMachine.EDITABLE_UI_CREATOR)),
+                true);
+        GTRegistryInfo.MACHINE.addType("custom", KJSWrappingMachineBuilder.class,
+                (id) -> new KJSWrappingMachineBuilder(id, new KJSTieredMachineBuilder(id)),
+                false);
+        GTRegistryInfo.MACHINE.addType("steam", KJSSteamMachineBuilder.class,
+                KJSSteamMachineBuilder::new, false);
+        GTRegistryInfo.MACHINE.addType("generator", KJSWrappingMachineBuilder.class,
+                (id) -> new KJSWrappingMachineBuilder(id,
+                        new KJSTieredMachineBuilder(id, SimpleGeneratorMachine::new,
+                                SimpleGeneratorMachine.EDITABLE_UI_CREATOR)),
+                false);
+        GTRegistryInfo.MACHINE.addType("multiblock", MultiblockMachineBuilder.class,
+                KJSWrappingMultiblockBuilder::createKJSMulti, false);
+        GTRegistryInfo.MACHINE.addType("tiered_multiblock", KJSWrappingMultiblockBuilder.class,
+                (id) -> new KJSWrappingMultiblockBuilder(id, new KJSTieredMultiblockBuilder(id)), false);
+        GTRegistryInfo.MACHINE.addType("primitive", MultiblockMachineBuilder.class,
+                (id) -> KJSWrappingMultiblockBuilder.createKJSMulti(id, PrimitiveFancyUIWorkableMachine::new),
+                false);
 
         GTRegistryInfo.WORLD_GEN_LAYER.addType("basic", WorldGenLayerBuilder.class, WorldGenLayerBuilder::new, true);
 
@@ -147,6 +164,21 @@ public class GregTechKubeJSPlugin extends KubeJSPlugin {
         super.registerEvents();
         GTCEuStartupEvents.GROUP.register();
         GTCEuServerEvents.GROUP.register();
+    }
+
+    @Override
+    public void generateDataJsons(DataJsonGenerator generator) {
+        GTRegistryInfo.ALL_BUILDERS.forEach(builderBase -> builderBase.generateDataJsons(generator));
+    }
+
+    @Override
+    public void generateAssetJsons(AssetJsonGenerator generator) {
+        GTRegistryInfo.ALL_BUILDERS.forEach(builderBase -> builderBase.generateAssetJsons(generator));
+    }
+
+    @Override
+    public void generateLang(LangEventJS event) {
+        GTRegistryInfo.ALL_BUILDERS.forEach(builderBase -> builderBase.generateLang(event));
     }
 
     @Override
@@ -183,8 +215,6 @@ public class GregTechKubeJSPlugin extends KubeJSPlugin {
         event.register("gtFluidOut", GTRecipeComponents.FLUID_OUT);
         event.register("gtEuIn", GTRecipeComponents.EU_IN);
         event.register("gtEuOut", GTRecipeComponents.EU_OUT);
-        event.register("gtSuIn", GTRecipeComponents.SU_IN);
-        event.register("gtSuOut", GTRecipeComponents.SU_OUT);
 
         event.register("gtChance", GTRecipeComponents.CHANCE_LOGIC_MAP);
         event.register("extendedOutputItem", GTRecipeComponents.EXTENDED_OUTPUT);
@@ -252,6 +282,8 @@ public class GregTechKubeJSPlugin extends KubeJSPlugin {
         event.add("GTOres", GTOres.class);
         event.add("GTRecipeModifiers", GTRecipeModifiers.class);
         event.add("OverclockingLogic", OverclockingLogic.class);
+        event.add("ModifierFunction", ModifierFunction.class);
+        event.add("MachineModifiers", MachineModifiers.class);
         event.add("GTWorldGenLayers", WorldGenLayers.class);
     }
 
